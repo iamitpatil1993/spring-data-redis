@@ -89,3 +89,6 @@ atlassian-ide-plugin.xml
 *.save
 *.log
 
+
+
+.factorypath
