@@ -3,7 +3,11 @@ package com.example.spring.data.redis.type;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
+import lombok.val;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
@@ -23,6 +27,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class ListTypeOperation<V> implements InitializingBean {
 
+	private static final Logger LOGGER = LoggerFactory.getLogger(ListTypeOperation.class);
 	private RedisOperations<String, V> redisOperations;
 	private ListOperations<String, V> listOperations;
 
@@ -108,6 +113,28 @@ public class ListTypeOperation<V> implements InitializingBean {
 				return null;
 			}
 		});
+	}
+
+	/**
+	 * This method will act as a consumer to consume list (which can be used as a queue).
+	 * It will continually pull data from redis queue and will process it.
+	 * <p>
+	 * But this way of consumer is not reliable, because what if this consumer pops data from
+	 * queue and not able to process it or consumer itself gets shutdown down or killed.
+	 * Recond in queue will remain unprocessed, so better way of queuing and consumer is
+	 * mentioned here in redis docs where we should consider usin intermediate list using BRPOPLPUSH.
+	 * <br/>
+	 * <a href="https://redis.io/commands/rpoplpush">Reliable queue using redis</a>
+	 *
+	 * @param key
+	 */
+	public void leftPopBlocked(final String key) {
+		while (true) {
+			V value = listOperations.leftPop(key, 5l, TimeUnit.SECONDS);
+			if (value != null) {
+				LOGGER.info("red list Item :: {}", value);
+			}
+		}
 	}
 
 	@Override
