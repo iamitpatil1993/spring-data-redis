@@ -3,8 +3,8 @@ package com.example.spring.data.redis.repository;
 import com.example.spring.data.redis.dto.Employee;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.redis.core.RedisOperations;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.stereotype.Repository;
 
@@ -21,7 +21,7 @@ public class EmployeeRepositoryImpl implements InitializingBean, EmployeeReposit
     private ValueOperations<String, Employee> valueOperations;
 
     @Autowired
-    public EmployeeRepositoryImpl(RedisTemplate<String, ?> redisTemplate) {
+    public EmployeeRepositoryImpl(@Qualifier("employeeRedisTemplate") RedisOperations<String, ?> redisTemplate) {
         this.redisOperations = (RedisOperations<String, Employee>) redisTemplate;
     }
 
