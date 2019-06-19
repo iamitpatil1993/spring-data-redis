@@ -3,15 +3,16 @@
  */
 package com.example.spring.data.redis.type;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.redis.core.RedisOperations;
 import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.stereotype.Component;
+
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 /**
  * @author amit
@@ -24,7 +25,7 @@ public class StringTypeOperation implements InitializingBean {
 	private ValueOperations<String, String> valueOperations;
 
 	@Autowired
-	public StringTypeOperation(RedisOperations<String, String> stringRedisTemplate) {
+	public StringTypeOperation(@Qualifier("stringTemplate")  RedisOperations<String, String> stringRedisTemplate) {
 		this.redisTemplate = stringRedisTemplate;
 		this.valueOperations = redisTemplate.opsForValue();
 	}
