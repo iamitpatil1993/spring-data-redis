@@ -1,8 +1,15 @@
 package com.example.spring.data.redis.dto;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.Setter;
+
 import java.io.Serializable;
 import java.util.Calendar;
+import java.util.HashSet;
 import java.util.Objects;
+import java.util.Set;
 
 /**
  * @author amit
@@ -14,6 +21,11 @@ public class Employee implements Serializable {
     private String firstName;
     private String lastName;
     private Calendar dateOfJoining;
+
+    @Getter(AccessLevel.PUBLIC)
+    @Setter(AccessLevel.PUBLIC)
+    @JsonIgnore
+    private Set<String> skills = new HashSet<>();
 
     public Employee() {
     }
@@ -55,6 +67,10 @@ public class Employee implements Serializable {
 
     public void setDateOfJoining(Calendar dateOfJoining) {
         this.dateOfJoining = dateOfJoining;
+    }
+
+    public void addSkill(final String skill) {
+        skills.add(skill);
     }
 
     @Override
