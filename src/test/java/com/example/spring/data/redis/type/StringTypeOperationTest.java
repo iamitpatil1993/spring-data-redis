@@ -1,27 +1,19 @@
 /**
- * 
+ *
  */
 package com.example.spring.data.redis.type;
 
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.not;
-import static org.hamcrest.Matchers.emptyCollectionOf;
-import static org.junit.Assert.assertThat;
-
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.UUID;
-
+import com.example.spring.data.redis.BaseTest;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import com.example.spring.data.redis.BaseTest;
+import java.util.*;
+
+import static org.hamcrest.CoreMatchers.*;
+import static org.hamcrest.Matchers.emptyCollectionOf;
+import static org.junit.Assert.assertThat;
 
 /**
  * @author amit
@@ -202,4 +194,18 @@ public class StringTypeOperationTest extends BaseTest {
 		assertThat(size, is(36l));
 	}
 
+	@Test
+	public void testExecute() {
+		// given
+		final String command = "keys";
+		final String[] args = new String[] {"*"};
+
+		// when
+		String setResult = (String) stringTypeoperation.execute("SET", Arrays.asList("FOO", "BAR").toArray(new String[2]));
+		List result = (List) stringTypeoperation.execute(command, args); // it returns List of byte
+
+		assertThat(setResult, is(equalTo("OK")));
+		assertThat(result.size(), is(1));
+		assertThat(new String((byte[]) result.get(0)), is(equalTo("FOO")));
+	}
 }

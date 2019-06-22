@@ -6,7 +6,10 @@ package com.example.spring.data.redis.type;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.data.redis.connection.DefaultStringRedisConnection;
+import org.springframework.data.redis.connection.StringRedisConnection;
 import org.springframework.data.redis.core.RedisOperations;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.stereotype.Component;
 
@@ -23,6 +26,7 @@ public class StringTypeOperation implements InitializingBean {
 
 	private RedisOperations<String, String> redisTemplate;
 	private ValueOperations<String, String> valueOperations;
+	private StringRedisConnection stringRedisConnection;
 
 	@Autowired
 	public StringTypeOperation(@Qualifier("stringTemplate")  RedisOperations<String, String> stringRedisTemplate) {
@@ -77,6 +81,21 @@ public class StringTypeOperation implements InitializingBean {
 		return valueOperations.size(key);
 	}
 
+	/**
+	 * This is how we can use StringRedisConnection over normal RedisConnection to perform operations.
+	 * StringRedisConnection extends RedisConnection and gives us ability to peform operations based on string
+	 * instead of byte[] as a case with RedisConnection.
+	 * @param command Command to executed
+	 * @param args argumemts
+	 * @return
+	 */
+	public Object execute(final String command, final String... args) {
+		if (args != null && args.length != 0) {
+			return stringRedisConnection.execute(command, args);
+		}
+		return stringRedisConnection.execute(command);
+	}
+
 	/*
 	 * (non-Javadoc)
 	 * 
@@ -84,6 +103,11 @@ public class StringTypeOperation implements InitializingBean {
 	 */
 	public void afterPropertiesSet() throws Exception {
 		assert redisTemplate != null : "RedisTemplate autowired null!";
+		/** I found no way to get access to or instanceof StringRedisConnection, I found code in StringRedisTemplate
+		 * which we can use to get StringRedisConnection object from normal RedisConnection instance.
+		 * DefaultStringRedisConnection is a class that implements StringRedisConnection.
+		 */
+		stringRedisConnection = new DefaultStringRedisConnection(((RedisTemplate) redisTemplate).getConnectionFactory().getConnection());
 	}
 
 }

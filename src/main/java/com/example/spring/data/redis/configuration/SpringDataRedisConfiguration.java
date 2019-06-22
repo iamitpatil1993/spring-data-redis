@@ -58,7 +58,10 @@ public class SpringDataRedisConfiguration {
 
 	/**
 	 * Default key and value serializers are StringRedisSerializer, so no need to
-	 * configure serializers for key and value
+	 * configure serializers for key and value.
+	 *
+	 * It used sub type of RedisConnection, StringRedisConnection which provides stringified
+	 * operations instead of byte[] which is a case with RedisConnection.
 	 * 
 	 * @param redisConnectionFactory
 	 * @return StringRedisTemplate which is used for spring related Redis operations
