@@ -208,4 +208,19 @@ public class StringTypeOperationTest extends BaseTest {
 		assertThat(result.size(), is(1));
 		assertThat(new String((byte[]) result.get(0)), is(equalTo("FOO")));
 	}
+
+    @Test
+    public void testGetAllKeysUsingRedisCallback() {
+		// given
+		String randomString = UUID.randomUUID().toString();
+		stringTypeoperation.set(UUID.randomUUID().toString(), randomString);
+		stringTypeoperation.set(UUID.randomUUID().toString(), randomString);
+
+		// when
+		Collection<String> allKeys = stringTypeoperation.getAllKeysUsingRedisCallback();
+
+		assertThat(allKeys, is(notNullValue()));
+		assertThat(allKeys.size(), is(equalTo(2)));
+	}
+
 }

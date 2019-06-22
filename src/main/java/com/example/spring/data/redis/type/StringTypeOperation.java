@@ -7,12 +7,14 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.redis.connection.DefaultStringRedisConnection;
+import org.springframework.data.redis.connection.RedisConnection;
 import org.springframework.data.redis.connection.StringRedisConnection;
 import org.springframework.data.redis.core.RedisOperations;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.stereotype.Component;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -95,6 +97,21 @@ public class StringTypeOperation implements InitializingBean {
 		}
 		return stringRedisConnection.execute(command);
 	}
+
+	/**
+	 * execute method takes RedisCallback, which gives us RedisConnection if template
+	 * type is RedisTemplate otherwise StringRedisConnection  if template type is StringRedisTemplate.
+     * We cab use this callback to get more control over redis connection and perform custom queries.
+     * Also can be used to groping of several commands.
+	 */
+	public Collection<String> getAllKeysUsingRedisCallback() {
+		return redisTemplate.execute((RedisConnection connection) -> {
+			// Do anything with redis using RedisConnection/StringRedisConnection.
+			return ((StringRedisConnection) connection).keys("*");
+		});
+	}
+
+
 
 	/*
 	 * (non-Javadoc)
