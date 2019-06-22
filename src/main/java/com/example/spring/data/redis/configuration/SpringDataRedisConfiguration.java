@@ -10,7 +10,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.PropertySource;
-import org.springframework.data.redis.connection.RedisConfiguration;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.connection.RedisStandaloneConfiguration;
 import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
@@ -40,14 +39,21 @@ public class SpringDataRedisConfiguration {
 	@Value(value = "${redis.con.database}")
 	public Integer database;
 
+	/**
+	 * This spring RedisConnectionFactory actually does the job of translation of connector specific
+	 * exception to SpringDataException.
+	 * So, spring data redis also supports consistent exception hierarchy.
+	 * @return
+	 */
 	@Bean
 	public RedisConnectionFactory redisConnectionFactory() {
-		RedisConfiguration redisConfiguration = new RedisStandaloneConfiguration(host, port);
-
-		LettuceConnectionFactory lettuceConnectionFactory = new LettuceConnectionFactory(redisConfiguration);
-		lettuceConnectionFactory.setDatabase(database);
-
-		return lettuceConnectionFactory;
+		/** RedisStandaloneConfiguration is used for Single node redis connection configuration.
+		 *  For other type connection configuration use RedisClusterConfiguration, RedisSentinelConfiguration etc classes
+		 *  as per type of redis setup needed.
+		 */
+		RedisStandaloneConfiguration redisConfiguration = new RedisStandaloneConfiguration(host, port);
+		redisConfiguration.setDatabase(database);
+		return new LettuceConnectionFactory(redisConfiguration);
 	}
 
 	/**
