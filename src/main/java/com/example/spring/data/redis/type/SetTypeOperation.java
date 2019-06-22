@@ -6,6 +6,7 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.SetOperations;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.Resource;
 import java.util.Optional;
 import java.util.Set;
 
@@ -16,6 +17,17 @@ import java.util.Set;
 public class SetTypeOperation<V> implements InitializingBean {
 
     private RedisTemplate<String, V> redisOperation;
+
+    /**
+     * We can inject SetOperations directly using RedisTemplate. Spring handles this for us.
+     * We just need to provide RedisTemplate bean name, and spring will call appropriate method
+     * on it to get target Operation type. [here SetOperations]
+     * We can not use @Autowired annotation here for same purpose. As it does not takes beanId/beanName.
+     * In order to inject bean by name we need to use @Qualifier in case of @Autowired, which we
+     * can not use here, as we do not want to inject exact bean by qualifier/id.
+     * So, no need to inject RedisTemplate if we only want operations on Set.
+     */
+    @Resource(name = "redisTemplateWithJdkSerializer")
     private SetOperations<String, V> setOperations;
 
     @Autowired
@@ -58,6 +70,6 @@ public class SetTypeOperation<V> implements InitializingBean {
     @Override
     public void afterPropertiesSet() throws Exception {
         assert redisOperation != null : "Redis template injected null ....";
-        setOperations = redisOperation.opsForSet();
+        assert setOperations != null : "Redis Set operations injected null ....";
     }
 }

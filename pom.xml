@@ -164,8 +164,13 @@
 			<artifactId>jackson-databind</artifactId>
 			<version>${jackson.verion}</version>
 		</dependency>
+		<!-- dependency for java EE annotations, No need to add entire  javaee-api -->
+		<dependency>
+			<groupId>javax.annotation</groupId>
+			<artifactId>javax.annotation-api</artifactId>
+			<version>1.3.2</version>
+		</dependency>
 	</dependencies>
-
 	<build>
 		<plugins>
 			<plugin>
