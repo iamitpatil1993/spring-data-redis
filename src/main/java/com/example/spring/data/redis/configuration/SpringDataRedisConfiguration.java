@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package com.example.spring.data.redis.configuration;
 
@@ -17,11 +17,13 @@ import org.springframework.data.redis.core.RedisOperations;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.serializer.Jackson2JsonRedisSerializer;
+import org.springframework.data.redis.serializer.OxmSerializer;
 import org.springframework.data.redis.serializer.RedisSerializer;
+import org.springframework.oxm.xstream.XStreamMarshaller;
 
 /**
  * Configures spring data redis
- * 
+ *
  * @author amit
  *
  */
@@ -62,7 +64,7 @@ public class SpringDataRedisConfiguration {
 	 *
 	 * It used sub type of RedisConnection, StringRedisConnection which provides stringified
 	 * operations instead of byte[] which is a case with RedisConnection.
-	 * 
+	 *
 	 * @param redisConnectionFactory
 	 * @return StringRedisTemplate which is used for spring related Redis operations
 	 *         (where value and key types are String)
@@ -112,6 +114,33 @@ public class SpringDataRedisConfiguration {
 		redisTemplate.setHashKeySerializer(RedisSerializer.string()); // Set hash key serializer to String
 		redisTemplate.setHashValueSerializer(new Jackson2JsonRedisSerializer<>(Employee.class)); // Set hash Value serializer
 		redisTemplate.setValueSerializer(new Jackson2JsonRedisSerializer<>(Employee.class)); // set Value serializer
+
+		return redisTemplate;
+	}
+
+	/**
+	 * Good thing about XML serializer is, it does not need generic type argumet as needed for Jackson.
+	 * So, we can use this serializer for all types in a same way we can use JDJSerializer.
+	 *
+	 * @param redisConnectionFactory
+	 * @return
+	 */
+	@Bean
+	@Qualifier("oxmSerializer")
+	public RedisOperations<String, ?> redisTemplateWithOXMSerializer(final RedisConnectionFactory redisConnectionFactory) {
+		RedisTemplate<String, ?> redisTemplate = new RedisTemplate<>();
+		redisTemplate.setConnectionFactory(redisConnectionFactory);
+
+		// String key serializers
+		redisTemplate.setKeySerializer(RedisSerializer.string());
+		redisTemplate.setHashKeySerializer(RedisSerializer.string());
+
+		// OXM Serializer for Values
+		XStreamMarshaller xStreamMarshaller = new XStreamMarshaller();
+		xStreamMarshaller.afterPropertiesSet();
+
+		redisTemplate.setHashValueSerializer(new OxmSerializer(xStreamMarshaller, xStreamMarshaller));
+		redisTemplate.setValueSerializer(new OxmSerializer(xStreamMarshaller, xStreamMarshaller));
 
 		return redisTemplate;
 	}
