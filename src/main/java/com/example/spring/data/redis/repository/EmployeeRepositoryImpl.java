@@ -1,6 +1,8 @@
 package com.example.spring.data.redis.repository;
 
 import com.example.spring.data.redis.dto.Employee;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -8,14 +10,10 @@ import org.springframework.dao.DataAccessException;
 import org.springframework.data.redis.connection.DefaultStringRedisConnection;
 import org.springframework.data.redis.connection.RedisConnection;
 import org.springframework.data.redis.connection.StringRedisConnection;
-import org.springframework.data.redis.core.RedisOperations;
-import org.springframework.data.redis.core.SessionCallback;
-import org.springframework.data.redis.core.ValueOperations;
+import org.springframework.data.redis.core.*;
 import org.springframework.stereotype.Repository;
 
-import java.util.Optional;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -24,6 +22,8 @@ import java.util.stream.Collectors;
 @Repository
 public class EmployeeRepositoryImpl implements InitializingBean, EmployeeRepository {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(EmployeeRepositoryImpl.class);
+    public static final String PATTERN_EMPLOYEES_GET_ALL = "employees:*[^skills]";
     private RedisOperations<String, Employee> redisOperations;
     private ValueOperations<String, Employee> valueOperations;
 
@@ -117,5 +117,44 @@ public class EmployeeRepositoryImpl implements InitializingBean, EmployeeReposit
     public void afterPropertiesSet() throws Exception {
         assert redisOperations != null : "Injected null redis template";
         valueOperations = redisOperations.opsForValue();
+    }
+
+    /**
+     * SCAN is always prefered over KEYS, as KEYS may block redis server.
+     *
+     * @return
+     * @see <a href="https://stackoverflow.com/questions/32603964/scan-vs-keys-performance-in-redis">SCAN Vs KEYS Redis</a>
+     */
+    @Override
+    public List<Employee> findAll() {
+        // find all employee keys using SCAN operation.
+        List<String> keys = redisOperations.execute((RedisConnection connection) -> {
+            List<String> employeeKeys = new ArrayList<>();
+            Cursor<byte[]> cursor = connection.scan(ScanOptions.scanOptions().match(PATTERN_EMPLOYEES_GET_ALL).build());
+            while (cursor.hasNext()) {
+                employeeKeys.add(new String(cursor.next()));
+            }
+            LOGGER.info("Found {} employees", employeeKeys.size());
+            return employeeKeys;
+        });
+        if (keys.isEmpty()) {
+            return Collections.emptyList();
+        }
+        // get employees by keys
+        return redisOperations.opsForValue().multiGet(keys);
+    }
+
+    @Override
+    public List<Employee> saveMultiple(List<Employee> employees) {
+        if (employees == null || employees.isEmpty()) {
+            return Collections.emptyList();
+        }
+        Map<String, Employee> employeeMap = new HashMap<>(employees.size());
+        employees.stream().forEach(emp -> {
+            emp.setEmployeeId(UUID.randomUUID().toString());
+            employeeMap.put(buildKey(emp.getEmployeeId()), emp);
+        });
+        valueOperations.multiSet(employeeMap);
+        return employees;
     }
 }

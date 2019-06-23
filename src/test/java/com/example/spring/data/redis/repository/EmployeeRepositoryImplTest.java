@@ -10,6 +10,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import java.util.*;
 
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.*;
 
@@ -73,5 +74,23 @@ public class EmployeeRepositoryImplTest extends BaseTest {
         skills.add(UUID.randomUUID().toString());
         employee.setSkills(skills);
         return employee;
+    }
+
+    @Test
+    public void testFindAll() {
+        // given
+        int count = 5000;
+        List<Employee> employees = new ArrayList<>(count);
+        for (int i = 0; i < count; i++) {
+            employees.add(buildTestEmployee());
+        }
+        employeeRepository.saveMultiple(employees);
+
+        // when
+        List<Employee> result = employeeRepository.findAll();
+
+        // then
+        assertThat(result, is(notNullValue()));
+        assertThat(result.size(), is(equalTo(count)));
     }
 }
