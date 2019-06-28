@@ -13,7 +13,10 @@ import org.springframework.data.redis.connection.RedisConnection;
 import org.springframework.data.redis.connection.StringRedisConnection;
 import org.springframework.data.redis.core.*;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.interceptor.TransactionAspectSupport;
+import org.springframework.util.Assert;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -169,7 +172,6 @@ public class EmployeeRepositoryImpl implements InitializingBean, EmployeeReposit
     @Transactional
     public void update(final Employee employee) {
         final String employeeKey = buildKey(employee.getEmployeeId());
-
         // update employee info
         redisOperations.opsForValue().set(employeeKey, employee);
 
@@ -183,5 +185,31 @@ public class EmployeeRepositoryImpl implements InitializingBean, EmployeeReposit
             employee.getSkills().stream().map(String::getBytes).forEach(skill -> connection.sAdd(skillsKey, skill));
             return null;
         });
+    }
+
+    /**
+     * No need to add @Transactional here. Ideally transaction demarcation should be handled by services
+     * above this Repo.
+     * created this method because existing method was creating transaction using SessionCallback. And nested
+     * transaction is not supported.
+     */
+    @Override
+    public Employee saveWithoutTransaction(final Employee employee) {
+        TransactionStatus currentTransactionRef = TransactionAspectSupport.currentTransactionStatus();
+        Assert.notNull(currentTransactionRef, "No transaction exists, was expecting one");
+
+        String employeeId = UUID.randomUUID().toString();
+        employee.setEmployeeId(employeeId);
+
+        // save employee
+        redisOperations.opsForValue().set(buildKey(employeeId), employee);
+
+        // Save skills
+        redisOperations.execute((RedisConnection connection) -> {
+            byte[] skillsKey = buildSkillsKey(employee.getEmployeeId()).getBytes();
+            employee.getSkills().stream().map(String::getBytes).forEach(skill -> connection.sAdd(skillsKey, skill));
+            return null;
+        });
+        return employee;
     }
 }

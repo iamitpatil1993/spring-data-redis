@@ -3,6 +3,7 @@
  */
 package com.example.spring.data.redis.configuration;
 
+import com.example.spring.data.redis.dto.Address;
 import com.example.spring.data.redis.dto.Employee;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
@@ -128,6 +129,24 @@ public class SpringDataRedisConfiguration {
 		/*
 		 Even though we use @EnableTransactionManagement, we need to manually enable transaction management per
 		 RedisTemplate we use in application, by calling below method on them
+		*/
+		redisTemplate.setEnableTransactionSupport(true);
+		return redisTemplate;
+	}
+
+	@Bean
+	@Qualifier("addressRedisTemplate")
+	public RedisOperations<String, Address> addressRedisTemplateWithJsonSerializer(final RedisConnectionFactory redisConnectionFactory) {
+		RedisTemplate<String, Address> redisTemplate = new RedisTemplate<>();
+		redisTemplate.setConnectionFactory(redisConnectionFactory);
+		redisTemplate.setKeySerializer(RedisSerializer.string()); // Set key serializer to String
+		redisTemplate.setHashKeySerializer(RedisSerializer.string()); // Set hash key serializer to String
+		redisTemplate.setHashValueSerializer(new Jackson2JsonRedisSerializer<>(Address.class)); // Set hash Value serializer
+		redisTemplate.setValueSerializer(new Jackson2JsonRedisSerializer<>(Address.class)); // set Value serializer
+
+		/*
+		 This will not only enable transaction, but also participate in existing transaction at ThreadLocal
+		 created by other RedisTemplates.
 		*/
 		redisTemplate.setEnableTransactionSupport(true);
 		return redisTemplate;

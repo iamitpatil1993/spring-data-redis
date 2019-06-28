@@ -61,7 +61,7 @@ public class EmployeeRepositoryImplTest extends BaseTest {
         assertThat(employeeRepository.count(), is(0));
     }
 
-    private Employee buildTestEmployee() {
+    public static Employee buildTestEmployee() {
         Employee employee = new Employee();
         employee.setEmployeeId(UUID.randomUUID().toString());
         employee.setFirstName(UUID.randomUUID().toString());

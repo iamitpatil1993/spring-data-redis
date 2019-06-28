@@ -26,4 +26,8 @@ public interface EmployeeRepository {
     default void update(Employee employee) {
         throw new RuntimeException("Not Implemented ...");
     }
+
+    default Employee saveWithoutTransaction(Employee employee)  {
+        throw new RuntimeException("Not Implemented ...");
+    }
 }
