@@ -13,6 +13,7 @@ import org.springframework.data.redis.connection.RedisConnection;
 import org.springframework.data.redis.connection.StringRedisConnection;
 import org.springframework.data.redis.core.*;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -158,5 +159,29 @@ public class EmployeeRepositoryImpl implements InitializingBean, EmployeeReposit
         });
         valueOperations.multiSet(employeeMap);
         return employees;
+    }
+
+    /**
+     * Similar to spring data jdbc, we can annotate the methods with @Transactional annotation and
+     * spring will handle transaction using provided transaction manager and aspects.
+     */
+    @Override
+    @Transactional
+    public void update(final Employee employee) {
+        final String employeeKey = buildKey(employee.getEmployeeId());
+
+        // update employee info
+        redisOperations.opsForValue().set(employeeKey, employee);
+
+        // update employee skills
+        redisOperations.execute((RedisConnection connection) -> {
+            byte[] skillsKey = buildSkillsKey(employee.getEmployeeId()).getBytes();
+            // delete existing skills
+            connection.del(skillsKey);
+
+            // update new skills
+            employee.getSkills().stream().map(String::getBytes).forEach(skill -> connection.sAdd(skillsKey, skill));
+            return null;
+        });
     }
 }

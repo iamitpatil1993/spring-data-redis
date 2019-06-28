@@ -10,8 +10,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import java.util.*;
 
 import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.notNullValue;
+import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
 
 
@@ -92,5 +91,76 @@ public class EmployeeRepositoryImplTest extends BaseTest {
         // then
         assertThat(result, is(notNullValue()));
         assertThat(result.size(), is(equalTo(count)));
+    }
+
+    /**
+     * Transaction Part-1: Test to update employee with Declarative transaction.
+     * Positive case.
+     * Expected: Should save/update both employee details and skills in transaction.
+     */
+    @Test
+    public void testUpdate() {
+        // given
+        String dummyString = UUID.randomUUID().toString();
+        Employee employee = buildTestEmployee();
+        Employee persistentEmployee = employeeRepository.save(employee);
+
+        // when
+        persistentEmployee.setFirstName(dummyString);
+        persistentEmployee.setLastName(dummyString);
+
+        Set<String> skills = new HashSet<>(2);
+        skills.add(dummyString);
+        persistentEmployee.setSkills(skills);
+        employeeRepository.update(employee);
+
+        // then
+        Optional<Employee> updatedEmployee = employeeRepository.get(persistentEmployee.getEmployeeId());
+        assertThat(updatedEmployee.isPresent(), is(true));
+        assertThat(updatedEmployee.get().getFirstName(), is(equalTo(persistentEmployee.getFirstName())));
+        assertThat(updatedEmployee.get().getLastName(), is(equalTo(persistentEmployee.getLastName())));
+
+        Set<String> employeeSkills = employeeRepository.getSkillsByEmployeeId(persistentEmployee.getEmployeeId());
+        assertNotNull(employeeSkills);
+        assertEquals(employeeSkills.size(), persistentEmployee.getSkills().size());
+        assertThat(employeeSkills, hasItem(dummyString));
+    }
+
+    /**
+     * Transaction Part-1: Test to update employee with Declarative transaction.
+     * Negative case: Will intentionally try to fail skills save operation to rollback transaction.
+     * Expected: Should rollback transaction and should rollback employee details save operation.
+     */
+    @Test
+    public void testUpdateWithErrorWhileSavingSkills() {
+        // given
+        String dummmyString = UUID.randomUUID().toString();
+        Employee employee = buildTestEmployee();
+        Employee persistentEmployee = employeeRepository.save(employee);
+
+        // when
+        persistentEmployee.setFirstName(dummmyString);
+        persistentEmployee.setLastName(dummmyString);
+
+        /*
+         Intentionally setting to null to cause runtime exception (NullPointer) in transactional method, so that
+         transaction get rollback
+        */
+        persistentEmployee.setSkills(null);
+        try {
+            employeeRepository.update(employee);
+        } catch (Exception e) {
+            // Nothing to handler
+        }
+
+        // then
+        Optional<Employee> nonUpdatedEmployee = employeeRepository.get(persistentEmployee.getEmployeeId());
+        assertThat(nonUpdatedEmployee.isPresent(), is(true));
+        assertThat(nonUpdatedEmployee.get().getFirstName(), is(not(equalTo(persistentEmployee.getFirstName()))));
+        assertThat(nonUpdatedEmployee.get().getLastName(), is(not(equalTo(persistentEmployee.getLastName()))));
+
+        Set<String> employeeSkills = employeeRepository.getSkillsByEmployeeId(persistentEmployee.getEmployeeId());
+        assertNotNull(employeeSkills);
+        assertThat(employeeSkills.size(), is(greaterThan(0)));
     }
 }

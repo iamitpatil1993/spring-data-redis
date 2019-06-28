@@ -22,4 +22,8 @@ public interface EmployeeRepository {
     List<Employee> findAll();
 
     List<Employee> saveMultiple(final List<Employee> employees);
+
+    default void update(Employee employee) {
+        throw new RuntimeException("Not Implemented ...");
+    }
 }

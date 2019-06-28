@@ -23,6 +23,7 @@ import org.springframework.data.redis.serializer.Jackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.OxmSerializer;
 import org.springframework.data.redis.serializer.RedisSerializer;
 import org.springframework.oxm.xstream.XStreamMarshaller;
+import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 /**
  * Configures spring data redis
@@ -32,6 +33,7 @@ import org.springframework.oxm.xstream.XStreamMarshaller;
  */
 
 @Configuration
+@EnableTransactionManagement // Enable spring generic Declarative transaction management using aspects.
 @PropertySource(value = { "classpath:redis.properties" })
 public class SpringDataRedisConfiguration {
 
@@ -123,6 +125,11 @@ public class SpringDataRedisConfiguration {
 		redisTemplate.setHashValueSerializer(new Jackson2JsonRedisSerializer<>(Employee.class)); // Set hash Value serializer
 		redisTemplate.setValueSerializer(new Jackson2JsonRedisSerializer<>(Employee.class)); // set Value serializer
 
+		/*
+		 Even though we use @EnableTransactionManagement, we need to manually enable transaction management per
+		 RedisTemplate we use in application, by calling below method on them
+		*/
+		redisTemplate.setEnableTransactionSupport(true);
 		return redisTemplate;
 	}
 
