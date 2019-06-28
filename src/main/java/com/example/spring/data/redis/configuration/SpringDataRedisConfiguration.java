@@ -16,6 +16,9 @@ import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactor
 import org.springframework.data.redis.core.RedisOperations;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.data.redis.hash.DecoratingStringHashMapper;
+import org.springframework.data.redis.hash.HashMapper;
+import org.springframework.data.redis.hash.Jackson2HashMapper;
 import org.springframework.data.redis.serializer.Jackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.OxmSerializer;
 import org.springframework.data.redis.serializer.RedisSerializer;
@@ -144,4 +147,16 @@ public class SpringDataRedisConfiguration {
 
 		return redisTemplate;
 	}
+
+    @Bean
+    @Qualifier("jackson")
+    public HashMapper<Employee, String, String> jacksonHashMapper() {
+       // when used flatten: true, it does not serialize date and Calender fields, so it's issue, I have reported this
+		// https://jira.spring.io/browse/DATAREDIS-1001
+		// and when we use flatten: false, it serializes the date and calender fields, but fails to deserializer them,
+		// and code breaks
+		// So, I am using flatten:true, which will not serialie Date and Calender fields but atleast will able to
+		// desreialize saved object.
+       return new DecoratingStringHashMapper(new Jackson2HashMapper(true));
+    }
 }

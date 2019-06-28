@@ -6,6 +6,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.context.annotation.Primary;
 import org.springframework.dao.DataAccessException;
 import org.springframework.data.redis.connection.DefaultStringRedisConnection;
 import org.springframework.data.redis.connection.RedisConnection;
@@ -20,6 +21,7 @@ import java.util.stream.Collectors;
  * @author amit
  */
 @Repository
+@Primary
 public class EmployeeRepositoryImpl implements InitializingBean, EmployeeRepository {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(EmployeeRepositoryImpl.class);

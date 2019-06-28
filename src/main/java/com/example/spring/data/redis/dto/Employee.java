@@ -6,26 +6,30 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.io.Serializable;
-import java.util.Calendar;
-import java.util.HashSet;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 
 /**
  * @author amit
  */
 // This DTO needs to be Serializable in order to use JDK serializer for redis
+@Getter(AccessLevel.PUBLIC)
+@Setter(AccessLevel.PUBLIC)
 public class Employee implements Serializable {
 
     private String employeeId;
     private String firstName;
     private String lastName;
-    private Calendar dateOfJoining;
 
-    @Getter(AccessLevel.PUBLIC)
-    @Setter(AccessLevel.PUBLIC)
+    private Calendar dateOfJoining;
+    private Integer age = 32;
+
+    private Date createdDate = new Date();
+
+    private Date updatedDate = new Date();
+
     @JsonIgnore
     private Set<String> skills = new HashSet<>();
+    private Address address;
 
     public Employee() {
     }
@@ -37,37 +41,6 @@ public class Employee implements Serializable {
         this.dateOfJoining = dateOfJoining;
     }
 
-    public String getEmployeeId() {
-        return employeeId;
-    }
-
-    public void setEmployeeId(String employeeId) {
-        this.employeeId = employeeId;
-    }
-
-    public String getFirstName() {
-        return firstName;
-    }
-
-    public void setFirstName(String firstName) {
-        this.firstName = firstName;
-    }
-
-    public String getLastName() {
-        return lastName;
-    }
-
-    public void setLastName(String lastName) {
-        this.lastName = lastName;
-    }
-
-    public Calendar getDateOfJoining() {
-        return dateOfJoining;
-    }
-
-    public void setDateOfJoining(Calendar dateOfJoining) {
-        this.dateOfJoining = dateOfJoining;
-    }
 
     public void addSkill(final String skill) {
         skills.add(skill);
