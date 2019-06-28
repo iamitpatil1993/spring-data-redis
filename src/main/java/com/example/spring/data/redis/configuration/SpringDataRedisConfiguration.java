@@ -58,7 +58,12 @@ public class SpringDataRedisConfiguration {
 		 */
 		RedisStandaloneConfiguration redisConfiguration = new RedisStandaloneConfiguration(host, port);
 		redisConfiguration.setDatabase(database);
-		return new LettuceConnectionFactory(redisConfiguration);
+		LettuceConnectionFactory lettuceConnectionFactory = new LettuceConnectionFactory(redisConfiguration);
+		// By default, Lettuce shares same native connection for all LettuceConnection instances. So, it internally
+		// uses only one redis native connection to perform all operations, we can disable this using below flag,
+		// every operation on LettuceConnection will open and close a socket.
+		// lettuceConnectionFactory.setShareNativeConnection(false);
+		return lettuceConnectionFactory;
 	}
 
 	/**
