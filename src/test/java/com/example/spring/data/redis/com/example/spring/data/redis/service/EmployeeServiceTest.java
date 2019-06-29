@@ -6,6 +6,7 @@ import com.example.spring.data.redis.dto.Employee;
 import com.example.spring.data.redis.repository.AddressRepository;
 import com.example.spring.data.redis.repository.EmployeeRepository;
 import com.example.spring.data.redis.repository.EmployeeRepositoryImplTest;
+import com.example.spring.data.redis.service.EmployeeService;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;

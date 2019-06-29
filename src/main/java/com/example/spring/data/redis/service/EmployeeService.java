@@ -1,4 +1,4 @@
-package com.example.spring.data.redis.com.example.spring.data.redis.service;
+package com.example.spring.data.redis.service;
 
 import com.example.spring.data.redis.dto.Employee;
 import com.example.spring.data.redis.repository.AddressRepository;
