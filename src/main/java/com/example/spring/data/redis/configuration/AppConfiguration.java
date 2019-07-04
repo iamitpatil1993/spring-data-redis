@@ -4,6 +4,7 @@
 package com.example.spring.data.redis.configuration;
 
 import com.example.spring.data.redis.configuration.collection.CollectionBeanConfiguration;
+import com.example.spring.data.redis.configuration.repository.SpringDataRepositoryConfiguration;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.ComponentScan.Filter;
 import org.springframework.context.annotation.Configuration;
@@ -21,7 +22,8 @@ import org.springframework.context.annotation.Import;
  order in which we import these does not matter spring manages inter dependencies, rather we should avoid using @Order
  on configuration classes to define custom configuration class load order.
 */
-@Import(value = {SpringDataRedisConfiguration.class, TransactionConfiguration.class, CollectionBeanConfiguration.class})
+@Import(value = {SpringDataRedisConfiguration.class, TransactionConfiguration.class, CollectionBeanConfiguration.class,
+        SpringDataRepositoryConfiguration.class})
 @EnableAspectJAutoProxy
 public class AppConfiguration {
     // Nothing to do here for now
