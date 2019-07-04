@@ -42,6 +42,60 @@ public class PatientRepositoryTest extends BaseTest {
         assertThat(savedPatient.get(), is(equalTo(patient)));
     }
 
+    @Test
+    public void testCount() {
+        // given
+        Patient patient = createTestPatient();
+        patientRepository.save(patient);
+
+        // when
+        long patientCount = patientRepository.count();
+
+        // then
+        assertThat(patientCount, is(equalTo(1l)));
+    }
+
+    @Test
+    public void testDeleteByEntity() {
+        // given
+        Patient patient = createTestPatient();
+        patientRepository.save(patient);
+
+        // when
+        patientRepository.delete(patient);
+
+        // then
+        assertThat(patientRepository.findById(patient.getId()).isPresent(), is(false));
+    }
+
+    @Test
+    public void testDeleteById() {
+        // given
+        Patient patient = createTestPatient();
+        patientRepository.save(patient);
+
+        // when
+        patientRepository.deleteById(patient.getId());
+
+        // then
+        assertThat(patientRepository.findById(patient.getId()).isPresent(), is(false));
+    }
+
+    @Test
+    public void testFindAll() {
+        // given
+        List<Patient> patientsToSave = new ArrayList<>(10);
+        for (int i = 0; i < 10; i++) {
+            patientsToSave.add(createTestPatient());
+        }
+        patientRepository.saveAll(patientsToSave);
+
+        // when
+        List<Patient> result = (List<Patient>) patientRepository.findAll();
+
+        // then
+        assertThat(result.size(), is(10));
+    }
 
     public static Patient createTestPatient() {
         Patient patient = new Patient().withId(UUID.randomUUID());
@@ -55,4 +109,5 @@ public class PatientRepositoryTest extends BaseTest {
         patient.setBloodGroup(bloodGroups.get(ThreadLocalRandom.current().nextInt(0, 8)));
         return patient;
     }
+
 }
