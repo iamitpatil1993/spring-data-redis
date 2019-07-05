@@ -3,6 +3,7 @@ package com.example.spring.data.redis.model;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
+import org.springframework.data.annotation.AccessType;
 import org.springframework.data.annotation.PersistenceConstructor;
 import org.springframework.data.redis.core.RedisHash;
 
@@ -32,6 +33,12 @@ public class Patient extends BaseEntity {
 
     private String bloodGroup;
 
+    /*
+     Since configured PersistenceConstructor does not set this property, spring will inject this field via field/setter based
+     injection. Default is field injection similar to JPA. So, here we will use Setter based injection.
+     So, setter will get called to set gender on created Patient instance.
+    */
+    @AccessType(AccessType.Type.PROPERTY)
     private Gender gender;
 
     /**
@@ -46,7 +53,6 @@ public class Patient extends BaseEntity {
      * If any field is missing in this constructor, spring will use setter/wither method for that fields.
      * Read <a href = "here">https://docs.spring.io/spring-data/data-redis/docs/current/reference/html/#mapping.object-creation</a>
      */
-    @PersistenceConstructor
     public Patient(UUID id, String firstName, String lastName, Calendar dob, String ssn, String bloodGroup,
                    Gender gender) {
         super(id);
@@ -65,6 +71,21 @@ public class Patient extends BaseEntity {
      */
     public Patient(final UUID id) {
         super(id);
+    }
+
+    /**
+     * This is another parameterized constructor without GENDER and ID field. So, spring will set gender field via
+     * Field/Setter (Field is default which we can override using @AccessType)
+     * Since ID field is immutable, spring will use wither method for ID to set ID field.
+     */
+    @PersistenceConstructor
+    public Patient(String firstName, String lastName, Calendar dob, String ssn, String bloodGroup) {
+        super(null);
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.dob = dob;
+        this.ssn = ssn;
+        this.bloodGroup = bloodGroup;
     }
 
     /**
