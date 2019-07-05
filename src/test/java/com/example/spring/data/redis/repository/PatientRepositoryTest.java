@@ -3,6 +3,8 @@ package com.example.spring.data.redis.repository;
 import com.example.spring.data.redis.BaseTest;
 import com.example.spring.data.redis.model.Gender;
 import com.example.spring.data.redis.model.Patient;
+import com.example.spring.data.redis.model.PatientVital;
+import com.example.spring.data.redis.model.VitalType;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,8 +15,7 @@ import java.util.concurrent.ThreadLocalRandom;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 /**
  * @author amit
@@ -97,6 +98,65 @@ public class PatientRepositoryTest extends BaseTest {
         assertThat(result.size(), is(10));
     }
 
+    @Test
+    public void testSavePatientWithPatientVitals() {
+        // given
+        Patient patient = createTestPatient();
+        Set<PatientVital> patientVitals = new HashSet<>(3);
+
+        for (int i = 0; i < 3; i++) {
+            patientVitals.add(createTestPatientVial(patient));
+        }
+        patient.setPatientVitals(patientVitals);
+
+        // when
+        patientRepository.save(patient);
+
+        // then
+        Optional<Patient> patientByIdResult = patientRepository.findById(patient.getId());
+        assertThat(patientByIdResult.isPresent(), is(true));
+        assertEquals(patient, patientByIdResult.get());
+
+        assertThat(patientByIdResult.get().getPatientVitals().size(), is(equalTo(patient.getPatientVitals().size())));
+        patient.getPatientVitals().stream().forEach(patientVital -> {
+            assertTrue(patientByIdResult.get().getPatientVitals().contains(patientVital));
+        });
+    }
+
+    @Test
+    public void testSavePatientWithAllergiesAndPatientVitals() {
+        // given
+        Patient patient = createTestPatient();
+        Set<String> allergies = new HashSet<>(3);
+        Set<PatientVital> patientVitals = new HashSet<>(3);
+
+        for (int i = 0; i < 3; i++) {
+            allergies.add(UUID.randomUUID().toString());
+            patientVitals.add(createTestPatientVial(patient));
+        }
+        patient.setAllergies(allergies);
+        patient.setPatientVitals(patientVitals);
+
+
+        // when
+        patientRepository.save(patient);
+
+        // then
+        Optional<Patient> patientByIdResult = patientRepository.findById(patient.getId());
+        assertThat(patientByIdResult.isPresent(), is(true));
+        assertEquals(patient, patientByIdResult.get());
+
+        assertThat(patientByIdResult.get().getPatientVitals().size(), is(equalTo(patient.getPatientVitals().size())));
+        patient.getPatientVitals().stream().forEach(patientVital -> {
+            assertTrue(patientByIdResult.get().getPatientVitals().contains(patientVital));
+        });
+
+        assertThat(patientByIdResult.get().getAllergies().size(), is(equalTo(patient.getAllergies().size())));
+        patient.getAllergies().stream().forEach(allergy -> {
+            assertTrue(patientByIdResult.get().getAllergies().contains(allergy));
+        });
+    }
+
     public static Patient createTestPatient() {
         Patient patient = new Patient(UUID.randomUUID());
         patient.setFirstName("Bob");
@@ -110,4 +170,12 @@ public class PatientRepositoryTest extends BaseTest {
         return patient;
     }
 
+
+    private PatientVital createTestPatientVial(Patient patient) {
+        PatientVital patientVital = new PatientVital(UUID.randomUUID());
+        patientVital.setPatientId(patient.getId());
+        patientVital.setValue(2323d);
+        patientVital.setVital(VitalType.HEIGHT);
+        return patientVital;
+    }
 }

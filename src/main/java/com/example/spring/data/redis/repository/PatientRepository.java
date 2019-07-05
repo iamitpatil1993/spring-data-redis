@@ -3,6 +3,7 @@ package com.example.spring.data.redis.repository;
 import com.example.spring.data.redis.model.Patient;
 import org.springframework.data.repository.CrudRepository;
 
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -14,5 +15,6 @@ import java.util.UUID;
  * spring data redis specific repository.
  */
 public interface PatientRepository extends CrudRepository<Patient, UUID> {
-    // No custom repository methods for now
+
+    List<Patient> findAllByFirstName(final String firstName);
 }

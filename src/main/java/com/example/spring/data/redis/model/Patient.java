@@ -1,6 +1,5 @@
 package com.example.spring.data.redis.model;
 
-import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.data.annotation.AccessType;
@@ -8,6 +7,8 @@ import org.springframework.data.annotation.PersistenceConstructor;
 import org.springframework.data.redis.core.RedisHash;
 
 import java.util.Calendar;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.UUID;
 
 /**
@@ -20,7 +21,6 @@ import java.util.UUID;
 @RedisHash
 @Getter
 @Setter
-@EqualsAndHashCode
 public class Patient extends BaseEntity {
 
     private String firstName;
@@ -32,6 +32,10 @@ public class Patient extends BaseEntity {
     private String ssn;
 
     private String bloodGroup;
+
+    private Set<PatientVital> patientVitals = new HashSet<>();
+
+    private Set<String> allergies = new HashSet<>();
 
     /*
      Since configured PersistenceConstructor does not set this property, spring will inject this field via field/setter based
@@ -54,7 +58,7 @@ public class Patient extends BaseEntity {
      * Read <a href = "here">https://docs.spring.io/spring-data/data-redis/docs/current/reference/html/#mapping.object-creation</a>
      */
     public Patient(UUID id, String firstName, String lastName, Calendar dob, String ssn, String bloodGroup,
-                   Gender gender) {
+                   Gender gender, Set<String> allergies, Set<PatientVital> patientVitals) {
         super(id);
         this.firstName = firstName;
         this.lastName = lastName;
@@ -62,6 +66,8 @@ public class Patient extends BaseEntity {
         this.ssn = ssn;
         this.bloodGroup = bloodGroup;
         this.gender = gender;
+        this.allergies = allergies;
+        this.patientVitals = patientVitals;
     }
 
     /**
@@ -79,13 +85,16 @@ public class Patient extends BaseEntity {
      * Since ID field is immutable, spring will use wither method for ID to set ID field.
      */
     @PersistenceConstructor
-    public Patient(String firstName, String lastName, Calendar dob, String ssn, String bloodGroup) {
+    public Patient(String firstName, String lastName, Calendar dob, String ssn, String bloodGroup, Set<String> allergies,
+                   Set<PatientVital> patientVitals) {
         super(null);
         this.firstName = firstName;
         this.lastName = lastName;
         this.dob = dob;
         this.ssn = ssn;
         this.bloodGroup = bloodGroup;
+        this.allergies = allergies;
+        this.patientVitals = patientVitals;
     }
 
     /**
@@ -98,6 +107,7 @@ public class Patient extends BaseEntity {
      * @return New Patient instance with provided ID field.
      */
     public Patient withId(final UUID id) {
-        return new Patient(id, this.firstName, this.lastName, this.dob, this.ssn, this.bloodGroup, this.gender);
+        return new Patient(id, this.firstName, this.lastName, this.dob, this.ssn, this.bloodGroup, this.gender,
+                allergies, patientVitals);
     }
 }
