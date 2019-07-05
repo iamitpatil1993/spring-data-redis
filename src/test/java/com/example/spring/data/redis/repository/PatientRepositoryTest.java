@@ -98,7 +98,7 @@ public class PatientRepositoryTest extends BaseTest {
     }
 
     public static Patient createTestPatient() {
-        Patient patient = new Patient().withId(UUID.randomUUID());
+        Patient patient = new Patient(UUID.randomUUID());
         patient.setFirstName("Bob");
         patient.setLastName("Sargent");
         patient.setDob(Calendar.getInstance());

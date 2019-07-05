@@ -3,6 +3,7 @@ package com.example.spring.data.redis.model;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
+import org.springframework.data.annotation.PersistenceConstructor;
 import org.springframework.data.redis.core.RedisHash;
 
 import java.util.Calendar;
@@ -33,6 +34,19 @@ public class Patient extends BaseEntity {
 
     private Gender gender;
 
+    /**
+     * Since, this entity now has no default constructor and has two parameterized constructors, it will throw
+     * exception as there is ambiguity for which of two parameterized constructors to use.
+     * So, either we need to provide default constructor so that spring uses it OR we can declare one of parameterized
+     * constructor as a PersistenceConstructor using @PersistenceConstructor, so that spring uses that constructor
+     * to instantiate Entity.
+     * So, declare this constructor as a PersistenceConstructor.
+     * Since, this constructor now accepts all fields, spring will not call wither methods or setters  not reflections to set properties.
+     * Hence this approach adds 10% of performance improvement.
+     * If any field is missing in this constructor, spring will use setter/wither method for that fields.
+     * Read <a href = "here">https://docs.spring.io/spring-data/data-redis/docs/current/reference/html/#mapping.object-creation</a>
+     */
+    @PersistenceConstructor
     public Patient(UUID id, String firstName, String lastName, Calendar dob, String ssn, String bloodGroup,
                    Gender gender) {
         super(id);
@@ -44,8 +58,13 @@ public class Patient extends BaseEntity {
         this.gender = gender;
     }
 
-    public Patient() {
-        super(null);
+    /**
+     * By default, if no-arg constructor is available, spring data redis uses it to create instance and avoid
+     * any other constructors.
+     * And then populate properties using setters and/or wither methods [for immutable fields].
+     */
+    public Patient(final UUID id) {
+        super(id);
     }
 
     /**
