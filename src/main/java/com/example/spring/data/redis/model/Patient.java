@@ -37,6 +37,8 @@ public class Patient extends BaseEntity {
 
     private Set<String> allergies = new HashSet<>();
 
+    private Set<PastMedicalHistory> pastMedicalHistories = new HashSet<>();
+
     /*
      Since configured PersistenceConstructor does not set this property, spring will inject this field via field/setter based
      injection. Default is field injection similar to JPA. So, here we will use Setter based injection.
@@ -58,7 +60,8 @@ public class Patient extends BaseEntity {
      * Read <a href = "here">https://docs.spring.io/spring-data/data-redis/docs/current/reference/html/#mapping.object-creation</a>
      */
     public Patient(UUID id, String firstName, String lastName, Calendar dob, String ssn, String bloodGroup,
-                   Gender gender, Set<String> allergies, Set<PatientVital> patientVitals) {
+                   Gender gender, Set<String> allergies, Set<PatientVital> patientVitals,
+                   Set<PastMedicalHistory> pastMedicalHistories) {
         super(id);
         this.firstName = firstName;
         this.lastName = lastName;
@@ -68,6 +71,7 @@ public class Patient extends BaseEntity {
         this.gender = gender;
         this.allergies = allergies;
         this.patientVitals = patientVitals;
+        this.pastMedicalHistories = pastMedicalHistories;
     }
 
     /**
@@ -108,6 +112,6 @@ public class Patient extends BaseEntity {
      */
     public Patient withId(final UUID id) {
         return new Patient(id, this.firstName, this.lastName, this.dob, this.ssn, this.bloodGroup, this.gender,
-                allergies, patientVitals);
+                allergies, patientVitals, pastMedicalHistories);
     }
 }

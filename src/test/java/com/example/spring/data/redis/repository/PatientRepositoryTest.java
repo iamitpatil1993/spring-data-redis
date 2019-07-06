@@ -1,10 +1,7 @@
 package com.example.spring.data.redis.repository;
 
 import com.example.spring.data.redis.BaseTest;
-import com.example.spring.data.redis.model.Gender;
-import com.example.spring.data.redis.model.Patient;
-import com.example.spring.data.redis.model.PatientVital;
-import com.example.spring.data.redis.model.VitalType;
+import com.example.spring.data.redis.model.*;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -157,6 +154,53 @@ public class PatientRepositoryTest extends BaseTest {
         });
     }
 
+    @Test
+    public void testSavePatientWithAllergiesAndPatientVitalsAndPastMedicalHistories() {
+        // given
+        int count = 3;
+        Patient patient = createTestPatient();
+        Set<String> allergies = new HashSet<>(count);
+        Set<PatientVital> patientVitals = new HashSet<>(count);
+        Set<PastMedicalHistory> pastMedicalHistories = new HashSet<>(count);
+        pastMedicalHistories.add(createTestPastMedicalHistory(patient, PastMedicationHistoryType.ADOLESCENCE));
+        pastMedicalHistories.add(createTestPastMedicalHistory(patient, PastMedicationHistoryType.CHILDHOOD));
+        pastMedicalHistories.add(createTestPastMedicalHistory(patient, PastMedicationHistoryType.IMMUNIZATION));
+
+        for (int i = 0; i < count; i++) {
+            allergies.add(UUID.randomUUID().toString());
+            patientVitals.add(createTestPatientVial(patient));
+        }
+        patient.setAllergies(allergies);
+        patient.setPatientVitals(patientVitals);
+        patient.setPastMedicalHistories(pastMedicalHistories);
+
+        // when
+        patientRepository.save(patient);
+
+        // then
+        Optional<Patient> patientByIdResult = patientRepository.findById(patient.getId());
+        assertThat(patientByIdResult.isPresent(), is(true));
+        assertEquals(patient, patientByIdResult.get());
+
+        assertThat(patientByIdResult.get().getPatientVitals().size(), is(equalTo(patient.getPatientVitals().size())));
+        patient.getPatientVitals().stream().forEach(patientVital -> {
+            assertTrue(patientByIdResult.get().getPatientVitals().contains(patientVital));
+        });
+
+        assertThat(patientByIdResult.get().getAllergies().size(), is(equalTo(patient.getAllergies().size())));
+        patient.getAllergies().stream().forEach(allergy -> {
+            assertTrue(patientByIdResult.get().getAllergies().contains(allergy));
+        });
+
+        assertThat(patientByIdResult.get().getPastMedicalHistories().size(),
+                is(equalTo(patient.getPastMedicalHistories().size())));
+        patient.getPastMedicalHistories().stream().forEach(pastMedicalHistory -> {
+            assertTrue(patientByIdResult.get().getPastMedicalHistories().contains(pastMedicalHistory));
+        });
+
+    }
+
+
     public static Patient createTestPatient() {
         Patient patient = new Patient(UUID.randomUUID());
         patient.setFirstName("Bob");
@@ -177,5 +221,9 @@ public class PatientRepositoryTest extends BaseTest {
         patientVital.setValue(2323d);
         patientVital.setVital(VitalType.HEIGHT);
         return patientVital;
+    }
+
+    private PastMedicalHistory createTestPastMedicalHistory(Patient patient, final PastMedicationHistoryType historyType) {
+        return new PastMedicalHistory(UUID.randomUUID(), UUID.randomUUID().toString(), historyType);
     }
 }

@@ -5,6 +5,8 @@ package com.example.spring.data.redis.configuration;
 
 import com.example.spring.data.redis.dto.Address;
 import com.example.spring.data.redis.dto.Employee;
+import com.example.spring.data.redis.model.converter.BytesToPastMedicalHistoryConverter;
+import com.example.spring.data.redis.model.converter.PastMedicalHistoryToBytesConverter;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -17,6 +19,7 @@ import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactor
 import org.springframework.data.redis.core.RedisOperations;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.data.redis.core.convert.RedisCustomConversions;
 import org.springframework.data.redis.hash.DecoratingStringHashMapper;
 import org.springframework.data.redis.hash.HashMapper;
 import org.springframework.data.redis.hash.Jackson2HashMapper;
@@ -25,6 +28,8 @@ import org.springframework.data.redis.serializer.OxmSerializer;
 import org.springframework.data.redis.serializer.RedisSerializer;
 import org.springframework.oxm.xstream.XStreamMarshaller;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
+
+import java.util.Arrays;
 
 /**
  * Configures spring data redis
@@ -190,4 +195,14 @@ public class SpringDataRedisConfiguration {
 		// desreialize saved object.
        return new DecoratingStringHashMapper(new Jackson2HashMapper(true));
     }
+
+	/**
+	 * Spring data redis automatically detect this bean in bean factory and uses it for conversion.
+	 */
+	@Bean
+	public RedisCustomConversions redisCustomConversions() {
+		// Declare all custom converters here.
+		return new RedisCustomConversions(Arrays.asList(new PastMedicalHistoryToBytesConverter(),
+				new BytesToPastMedicalHistoryConverter()));
+	}
 }
