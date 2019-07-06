@@ -215,7 +215,7 @@ public class PatientRepositoryTest extends BaseTest {
     }
 
 
-    private PatientVital createTestPatientVial(Patient patient) {
+    public static PatientVital createTestPatientVial(Patient patient) {
         PatientVital patientVital = new PatientVital(UUID.randomUUID());
         patientVital.setPatientId(patient.getId());
         patientVital.setValue(2323d);
@@ -223,7 +223,26 @@ public class PatientRepositoryTest extends BaseTest {
         return patientVital;
     }
 
-    private PastMedicalHistory createTestPastMedicalHistory(Patient patient, final PastMedicationHistoryType historyType) {
+    public static PastMedicalHistory createTestPastMedicalHistory(Patient patient, final PastMedicationHistoryType historyType) {
         return new PastMedicalHistory(UUID.randomUUID(), UUID.randomUUID().toString(), historyType, patient.getId());
+    }
+
+    @Test
+    public void testFindByFirstNameAndLastName() {
+        // given
+        Patient patient = createTestPatient();
+        patientRepository.save(patient);
+
+        patient = createTestPatient();
+        patientRepository.save(patient);
+
+        // when
+        List<Patient> allByFirstNameAndLastName = patientRepository.findAllByFirstNameAndLastName(patient.getFirstName(),
+                patient.getLastName());
+
+        // then
+        assertThat(allByFirstNameAndLastName.size(), is(equalTo(2)));
+        assertThat(allByFirstNameAndLastName.get(0).getFirstName(), is(equalTo(patient.getFirstName())));
+        assertThat(allByFirstNameAndLastName.get(0).getLastName(), is(equalTo(patient.getLastName())));
     }
 }

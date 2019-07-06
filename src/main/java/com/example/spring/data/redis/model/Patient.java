@@ -5,6 +5,7 @@ import lombok.Setter;
 import org.springframework.data.annotation.AccessType;
 import org.springframework.data.annotation.PersistenceConstructor;
 import org.springframework.data.redis.core.RedisHash;
+import org.springframework.data.redis.core.index.Indexed;
 
 import java.util.Calendar;
 import java.util.HashSet;
@@ -23,8 +24,20 @@ import java.util.UUID;
 @Setter
 public class Patient extends BaseEntity {
 
+    /**
+     * @Index annotation enables creation of redis secondary index for field.
+     * <p>
+     * Fields that for which redis secondary index enabled can ONLY be used for finders (Query methods). If field
+     * is not indexed and column is used in Query method then spring will not complain but will result not result for
+     * criteria applied for that field.
+     * </p>
+     * <p>
+     * So, in order to enable use of field in Query method criteria building, we must enable indexing for those fields.</p>
+     */
+    @Indexed
     private String firstName;
 
+    // Index for this is defined in configuration DefaultIndexConfiguration config class.
     private String lastName;
 
     private Calendar dob;

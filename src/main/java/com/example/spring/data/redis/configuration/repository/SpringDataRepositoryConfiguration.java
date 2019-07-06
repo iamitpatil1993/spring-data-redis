@@ -1,5 +1,6 @@
 package com.example.spring.data.redis.configuration.repository;
 
+import com.example.spring.data.redis.configuration.DefaultIndexConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
@@ -12,7 +13,8 @@ import org.springframework.data.redis.repository.configuration.EnableRedisReposi
  * @author amit
  */
 @Configuration
-@EnableRedisRepositories(basePackages = {"com.example.spring.data.redis.repository"})
+@EnableRedisRepositories(basePackages = {"com.example.spring.data.redis.repository"},
+        indexConfiguration = DefaultIndexConfiguration.class) // declare custom IndexConfiguration class here.
 public class SpringDataRepositoryConfiguration {
 
 

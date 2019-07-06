@@ -17,4 +17,9 @@ import java.util.UUID;
 public interface PatientRepository extends CrudRepository<Patient, UUID> {
 
     List<Patient> findAllByFirstName(final String firstName);
+
+    /**
+     * Since firstName and lastName fields are Indexed, we can use them to define criteria in Query methods.
+     */
+    List<Patient> findAllByFirstNameAndLastName(final String firstName, final String lastName);
 }
