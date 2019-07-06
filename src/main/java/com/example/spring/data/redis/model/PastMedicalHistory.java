@@ -12,14 +12,17 @@ import java.util.UUID;
 @Setter
 public class PastMedicalHistory extends BaseEntity {
 
+    private UUID patientId;
+
     private String history;
 
     private PastMedicationHistoryType historyType;
 
-    public PastMedicalHistory(UUID id, String history, PastMedicationHistoryType historyType) {
+    public PastMedicalHistory(UUID id, String history, PastMedicationHistoryType historyType, UUID patientId) {
         super(id);
         this.history = history;
         this.historyType = historyType;
+        this.patientId = patientId;
     }
 
     /**
@@ -31,7 +34,7 @@ public class PastMedicalHistory extends BaseEntity {
     }
 
     public PastMedicalHistory withId(final UUID id) {
-        return new PastMedicalHistory(id, history, historyType);
+        return new PastMedicalHistory(id, history, historyType, patientId);
     }
 
 

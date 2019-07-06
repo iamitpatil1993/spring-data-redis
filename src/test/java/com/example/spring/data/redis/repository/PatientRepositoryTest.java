@@ -224,6 +224,6 @@ public class PatientRepositoryTest extends BaseTest {
     }
 
     private PastMedicalHistory createTestPastMedicalHistory(Patient patient, final PastMedicationHistoryType historyType) {
-        return new PastMedicalHistory(UUID.randomUUID(), UUID.randomUUID().toString(), historyType);
+        return new PastMedicalHistory(UUID.randomUUID(), UUID.randomUUID().toString(), historyType, patient.getId());
     }
 }
