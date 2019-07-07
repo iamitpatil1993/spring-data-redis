@@ -5,6 +5,7 @@ package com.example.spring.data.redis.configuration;
 
 import com.example.spring.data.redis.dto.Address;
 import com.example.spring.data.redis.dto.Employee;
+import com.example.spring.data.redis.listener.RedisKeyspaceNotificationListener;
 import com.example.spring.data.redis.model.converter.BytesToPastMedicalHistoryConverter;
 import com.example.spring.data.redis.model.converter.PastMedicalHistoryToBytesConverter;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -23,6 +24,8 @@ import org.springframework.data.redis.core.convert.RedisCustomConversions;
 import org.springframework.data.redis.hash.DecoratingStringHashMapper;
 import org.springframework.data.redis.hash.HashMapper;
 import org.springframework.data.redis.hash.Jackson2HashMapper;
+import org.springframework.data.redis.listener.PatternTopic;
+import org.springframework.data.redis.listener.RedisMessageListenerContainer;
 import org.springframework.data.redis.serializer.Jackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.OxmSerializer;
 import org.springframework.data.redis.serializer.RedisSerializer;
@@ -204,5 +207,21 @@ public class SpringDataRedisConfiguration {
 		// Declare all custom converters here.
 		return new RedisCustomConversions(Arrays.asList(new PastMedicalHistoryToBytesConverter(),
 				new BytesToPastMedicalHistoryConverter()));
+	}
+
+	/**
+	 * Define RedisMessageListenerContainer and register one or more listeners to RedisMessageListenerContainer.
+	 * Spring uses RedisMessageListenerContainer internally, we do not need to configure anything more than this.
+	 */
+	@Bean
+	public RedisMessageListenerContainer redisMessageListenerContainer(final RedisConnectionFactory connectionFactory,
+																	   final RedisKeyspaceNotificationListener listener) {
+		RedisMessageListenerContainer redisMessageListenerContainer = new RedisMessageListenerContainer();
+		redisMessageListenerContainer.setConnectionFactory(connectionFactory);
+
+		// register redis key expiration integers with pattern
+		redisMessageListenerContainer.addMessageListener(listener, new PatternTopic("__keyevent@*__:*"));
+
+		return redisMessageListenerContainer;
 	}
 }
