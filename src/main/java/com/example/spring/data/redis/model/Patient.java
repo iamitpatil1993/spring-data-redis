@@ -19,7 +19,7 @@ import java.util.UUID;
  This annotation enables this class to be considered as a Entity for Spring Data repositories.
  By default fully qualified class name is used as a Key prefix in redis for this entity.
 */
-@RedisHash
+@RedisHash(timeToLive = 60) // we can set ttl here, we can also use @TimeToLive to set ttl at property or field level.
 @Getter
 @Setter
 public class Patient extends BaseEntity {
