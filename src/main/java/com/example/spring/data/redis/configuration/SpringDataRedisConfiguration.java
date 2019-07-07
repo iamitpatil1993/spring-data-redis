@@ -6,10 +6,12 @@ package com.example.spring.data.redis.configuration;
 import com.example.spring.data.redis.dto.Address;
 import com.example.spring.data.redis.dto.Employee;
 import com.example.spring.data.redis.listener.RedisKeyspaceNotificationListener;
+import com.example.spring.data.redis.model.Patient;
 import com.example.spring.data.redis.model.converter.BytesToPastMedicalHistoryConverter;
 import com.example.spring.data.redis.model.converter.PastMedicalHistoryToBytesConverter;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.ApplicationListener;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
@@ -17,6 +19,7 @@ import org.springframework.context.annotation.PropertySource;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.connection.RedisStandaloneConfiguration;
 import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
+import org.springframework.data.redis.core.RedisKeyExpiredEvent;
 import org.springframework.data.redis.core.RedisOperations;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -223,5 +226,10 @@ public class SpringDataRedisConfiguration {
 		redisMessageListenerContainer.addMessageListener(listener, new PatternTopic("__keyevent@*__:*"));
 
 		return redisMessageListenerContainer;
+	}
+
+	@Bean
+	public ApplicationListener<RedisKeyExpiredEvent<Patient>> patientEntityExpireListener(final ApplicationListener<RedisKeyExpiredEvent<Patient>> listener) {
+		return listener::onApplicationEvent;
 	}
 }
