@@ -5,6 +5,8 @@ import com.example.spring.data.redis.model.*;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Example;
+import org.springframework.data.domain.ExampleMatcher;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import java.util.*;
@@ -244,5 +246,78 @@ public class PatientRepositoryTest extends BaseTest {
         assertThat(allByFirstNameAndLastName.size(), is(equalTo(2)));
         assertThat(allByFirstNameAndLastName.get(0).getFirstName(), is(equalTo(patient.getFirstName())));
         assertThat(allByFirstNameAndLastName.get(0).getLastName(), is(equalTo(patient.getLastName())));
+    }
+
+    /**
+     * QBE: Simple matcher
+     * NOTE: If column that we are using to create matcher is not index, it returns all records in data store instead of
+     * empty result, which is kind of weired.
+     * If you remove index of firstName or lastName, it will return all records.
+     */
+    @Test
+    public void testFindAllByFirstNameAndLastNameUsingQBE() {
+        // given
+        final String firstName = "Bob";
+        final String lastName = "Sargent";
+        int count = 100;
+        for (int i = 0; i < count; i++) {
+            patientRepository.save(createTestPatient());
+        }
+        // create patient that does not match to criteria
+        Patient patient = createTestPatient();
+        patient.setFirstName(UUID.randomUUID().toString());
+        patient.setLastName(UUID.randomUUID().toString());
+        patientRepository.save(patient);
+
+        // when
+        Patient probe = new Patient(null);
+        probe.setFirstName(firstName);
+        probe.setLastName(lastName);
+
+        // matcher
+        ExampleMatcher patientMatcher = ExampleMatcher.matchingAll().withIgnorePaths("pastMedicalHistories", "allergies", "patientVitals");
+        Example<Patient> patientExample = Example.of(probe, patientMatcher);
+
+        List<Patient> matchedPatients = (List<Patient>) patientRepository.findAll(patientExample);
+
+        // then
+        assertThat(matchedPatients.size(), is(equalTo(count)));
+        matchedPatients.stream().forEach(tempPatient -> {
+            assertEquals(tempPatient.getFirstName(), firstName);
+            assertEquals(tempPatient.getLastName(), lastName);
+        });
+    }
+
+    /**
+     * QBE: Simple matcher with OR condition
+     */
+    @Test
+    public void testFindAllByFirstNameOrLastName() {
+        // given
+        Patient patient = createTestPatient();
+        patientRepository.save(patient);
+
+        Patient anotherPatient = createTestPatient();
+        anotherPatient.setLastName(UUID.randomUUID().toString());
+        patientRepository.save(anotherPatient);
+
+        Patient yetAnotherPatient = createTestPatient();
+        yetAnotherPatient.setFirstName(UUID.randomUUID().toString());
+        yetAnotherPatient.setLastName(UUID.randomUUID().toString());
+        patientRepository.save(yetAnotherPatient);
+
+        // when
+        Patient probe = new Patient(null);
+        probe.setFirstName(patient.getFirstName());
+        probe.setLastName(anotherPatient.getLastName());
+
+        // matcher
+        ExampleMatcher patientMatcher = ExampleMatcher.matchingAny().withIgnorePaths("pastMedicalHistories", "allergies", "patientVitals");
+        Example<Patient> patientExample = Example.of(probe, patientMatcher);
+
+        List<Patient> matchedPatients = (List<Patient>) patientRepository.findAll(patientExample);
+
+        // then
+        assertThat(matchedPatients.size(), is(equalTo(2)));
     }
 }
