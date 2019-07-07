@@ -320,4 +320,19 @@ public class PatientRepositoryTest extends BaseTest {
         // then
         assertThat(matchedPatients.size(), is(equalTo(2)));
     }
+
+    /**
+     * Since, ssn field is not indexed, spring will not throw any error but will return empty result.
+     */
+    @Test
+    public void testFindBySsn() {
+        // given
+        Patient patient = createTestPatient();
+        patientRepository.save(patient);
+
+        // when
+        Optional<Patient> bySsn = patientRepository.findBySsn(patient.getSsn());
+
+        assertThat(bySsn.isPresent(), is(false));
+    }
 }

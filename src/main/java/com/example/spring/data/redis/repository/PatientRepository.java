@@ -5,6 +5,7 @@ import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.query.QueryByExampleExecutor;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 /**
@@ -14,6 +15,8 @@ import java.util.UUID;
 /**
  * This is normal spring data repository as we do in JPA. There is nothing special to indicate that this is
  * spring data redis specific repository.
+ * <p>
+ * Spring repository support very limited query method functionalitie as compared to JPA.
  */
 public interface PatientRepository extends CrudRepository<Patient, UUID>, QueryByExampleExecutor<Patient> {
 
@@ -23,4 +26,9 @@ public interface PatientRepository extends CrudRepository<Patient, UUID>, QueryB
      * Since firstName and lastName fields are Indexed, we can use them to define criteria in Query methods.
      */
     List<Patient> findAllByFirstNameAndLastName(final String firstName, final String lastName);
+
+    /****
+     * Since, ssn field is not indexed, spring will not throw any error but will return empty result.
+     */
+    Optional<Patient> findBySsn(final String ssn);
 }
